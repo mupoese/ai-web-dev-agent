@@ -18,7 +18,10 @@
     "onCommand:ai-web-dev-agent.showSettings",
     "onCommand:ai-web-dev-agent.startDebugging",
     "onCommand:ai-web-dev-agent.analyzeError",
-    "onCommand:ai-web-dev-agent.suggestFixForBreakpoint"
+    "onCommand:ai-web-dev-agent.suggestFixForBreakpoint",
+    "onCommand:ai-web-dev-agent.showInputPanel",
+    "onCommand:ai-web-dev-agent.showOutputPanel",
+    "onView:aiWebDevProjectStructure"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -58,6 +61,14 @@
       {
         "command": "ai-web-dev-agent.suggestFixForBreakpoint",
         "title": "AI: Suggest Fix for Breakpoint"
+      },
+      {
+        "command": "ai-web-dev-agent.showInputPanel",
+        "title": "AI: Show Input Panel"
+      },
+      {
+        "command": "ai-web-dev-agent.showOutputPanel",
+        "title": "AI: Show Output Panel"
       },
       {
         "command": "ai-web-dev-agent.setOllamaApiKey",
@@ -252,11 +263,13 @@
     "@types/glob": "^7.1.3",
     "@types/mocha": "^8.2.2",
     "@types/node": "14.x",
+    "@types/sinon": "^10.0.0",
     "eslint": "^7.27.0",
     "@typescript-eslint/eslint-plugin": "^4.26.0",
     "@typescript-eslint/parser": "^4.26.0",
     "glob": "^7.1.7",
     "mocha": "^8.4.0",
+    "sinon": "^10.0.0",
     "typescript": "^4.3.2",
     "vscode-test": "^1.5.2",
     "ts-loader": "^9.2.2",

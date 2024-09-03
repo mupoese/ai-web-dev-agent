@@ -1,13 +1,46 @@
+# Source control
+.git
+.gitignore
 
+# Source files
+src/**
+
+# Typescript files
+**/*.ts
+**/*.map
+
+# Configuration files
+tsconfig.json
+webpack.config.js
+.eslintrc.json
+.prettierrc
+.vscode/**
+
+# Node modules
+node_modules/**
+
+# Test files
+test/**
+**/test/**
+**/*.test.ts
+
+# Build output
+out/**
+
+# Documentation
+README.md
+CHANGELOG.md
+LICENSE
+
+# Development and misc files
+.github/**
 .vscode/**
 .vscode-test/**
-src/**
-.gitignore
-.yarnrc
-webpack.config.js
-vsc-extension-quickstart.md
-**/tsconfig.json
-**/.eslintrc.json
-**/*.map
-**/*.ts
+**/*.vsix
+**/.DS_Store
+**/Thumbs.db
 
+# Specific to this extension
+resources/**
+!resources/icon.png
+webview/**

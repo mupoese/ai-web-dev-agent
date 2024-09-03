@@ -5,9 +5,12 @@ import { CodeGeneration } from './codeGeneration';
 import { ProjectManagement } from './projectManagement';
 import { UserInterface } from './userInterface';
 import { AIDebugger } from './debugger';
-import { Utils } from './utils';
+import { InputPanel } from './views/inputPanel';
+import { OutputPanel } from './views/outputPanel';
+import { SettingsPanel } from './views/settingsPanel';
+import { ProjectStructureProvider } from './views/projectStructureProvider';
 
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: vscode.ExtensionContext): void {
     console.log('AI Web Developer Agent is now active!');
 
     // Initialize components
@@ -15,11 +18,11 @@ export function activate(context: vscode.ExtensionContext) {
     const codeAnalysis = new CodeAnalysis(aiInterface);
     const codeGeneration = new CodeGeneration(aiInterface);
     const projectManagement = new ProjectManagement(aiInterface);
-    const userInterface = new UserInterface(context);
+    const userInterface = new UserInterface(context, aiInterface);
     const aiDebugger = new AIDebugger(aiInterface);
-
-    // Create output channel
-    const outputChannel = vscode.window.createOutputChannel("AI Web Dev");
+    const inputPanel = new InputPanel(context, aiInterface);
+    const outputPanel = new OutputPanel(context, aiInterface);
+    const settingsPanel = new SettingsPanel(context, aiInterface);
 
     // Register commands
     const commands: { [key: string]: (...args: any[]) => any } = {
@@ -28,23 +31,29 @@ export function activate(context: vscode.ExtensionContext) {
         'ai-web-dev-agent.refactorCode': () => codeGeneration.refactorCode(),
         'ai-web-dev-agent.createProject': () => projectManagement.createProject(),
         'ai-web-dev-agent.manageDependencies': () => projectManagement.manageDependencies(),
-        'ai-web-dev-agent.showSettings': () => userInterface.showSettings(),
+        'ai-web-dev-agent.showSettings': () => settingsPanel.show(),
         'ai-web-dev-agent.startDebugging': () => aiDebugger.startDebugging(),
         'ai-web-dev-agent.analyzeError': async () => {
             const error = await vscode.window.showInputBox({ prompt: 'Enter the error message' });
-            if (error) aiDebugger.analyzeError(error);
+            if (error) {
+                await aiDebugger.analyzeError(error);
+            }
         },
-        'ai-web-dev-agent.suggestFixForBreakpoint': () => aiDebugger.suggestFixForBreakpoint()
+        'ai-web-dev-agent.suggestFixForBreakpoint': () => aiDebugger.suggestFixForBreakpoint(),
+        'ai-web-dev-agent.showInputPanel': () => inputPanel.show(),
+        'ai-web-dev-agent.showOutputPanel': () => outputPanel.show(),
+        'ai-web-dev-agent.setOllamaApiKey': () => userInterface.setApiKey('ollama'),
+        'ai-web-dev-agent.setHuggingFaceApiKey': () => userInterface.setApiKey('huggingface'),
+        'ai-web-dev-agent.setGroqApiKey': () => userInterface.setApiKey('groq'),
+        'ai-web-dev-agent.setAnthropicApiKey': () => userInterface.setApiKey('anthropic'),
+        'ai-web-dev-agent.setCohereApiKey': () => userInterface.setApiKey('cohere'),
+        'ai-web-dev-agent.setGeminiApiKey': () => userInterface.setApiKey('gemini'),
+        'ai-web-dev-agent.setMistralApiKey': () => userInterface.setApiKey('mistral'),
+        'ai-web-dev-agent.setOpenAIApiKey': () => userInterface.setApiKey('openai')
     };
 
     Object.entries(commands).forEach(([commandName, handler]) => {
-        const disposable = vscode.commands.registerCommand(commandName, async () => {
-            try {
-                await handler();
-            } catch (error) {
-                Utils.showErrorAndLog(`Error in command ${commandName}: ${error.message}`, outputChannel);
-            }
-        });
+        const disposable = vscode.commands.registerCommand(commandName, handler);
         context.subscriptions.push(disposable);
     });
 
@@ -67,25 +76,19 @@ export function activate(context: vscode.ExtensionContext) {
     statusBarItem.show();
     context.subscriptions.push(statusBarItem);
 
-    function updateConfiguration() {
-        const config = vscode.workspace.getConfiguration('ai-web-dev-agent');
-        const aiProvider = config.get<string>('aiProvider', 'ollama');
-        aiInterface.setProvider(aiProvider);
-        Utils.log(`AI provider updated to: ${aiProvider}`, outputChannel);
-    }
-
     // Register custom tree view for project structure
     const treeDataProvider = new ProjectStructureProvider(projectManagement);
     vscode.window.createTreeView('aiWebDevProjectStructure', { treeDataProvider });
 
-    // Register code lens provider for AI suggestions
-    const codeLensProvider = new AICodeLensProvider(codeAnalysis);
-    vscode.languages.registerCodeLensProvider('*', codeLensProvider);
-
-    Utils.log('AI Web Developer Agent activated', outputChannel);
+    function updateConfiguration(): void {
+        const config = vscode.workspace.getConfiguration('ai-web-dev-agent');
+        const aiProvider = config.get<string>('aiProvider', 'ollama');
+        aiInterface.setProvider(aiProvider);
+        vscode.window.showInformationMessage(`AI provider updated to: ${aiProvider}`);
+    }
 }
 
-export function deactivate() {
+export function deactivate(): void {
     console.log('AI Web Developer Agent is now deactivated!');
 }
 
