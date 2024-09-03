@@ -6,8 +6,8 @@ We take the security of our project seriously and are committed to maintaining a
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.x     | :white_check_mark: |
-| 0.x     | :x:                |
+|         |                    |
+| 0.01    | :white_check_mark: |
 
 ## Reporting a Vulnerability
 
