@@ -13,7 +13,7 @@ We take the security of our project seriously and are committed to maintaining a
 
 If you discover a security vulnerability, we would like to know about it as soon as possible so we can take action to address it. Please follow these steps to report a vulnerability:
 
-1. **Do not create a public issue.** Instead, report the vulnerability by sending an email to our security team at [security@example.com](mailto:security@example.com). Use the subject line "Security Vulnerability Report".
+1. **Do not create a public issue.** Instead, report the vulnerability by sending an email to our security team at [mupoese@gmail.com](mailto:mupoese@gmail.com). Use the subject line "Security Vulnerability Report".
 2. Include as much information as possible in your report, such as:
    - A description of the vulnerability.
    - Steps to reproduce the issue.
