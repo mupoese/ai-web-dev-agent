@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Web Dev Output</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--vscode-editor-foreground);
+            background-color: var(--vscode-editor-background);
+            padding: 20px;
+        }
+        h1 {
+            color: var(--vscode-titleBar-activeForeground);
+        }
+        #content {
+            white-space: pre-wrap;
+            margin-bottom: 20px;
+        }
+        #actions {
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: var(--vscode-button-background);
+            color: var(--vscode-button-foreground);
+            border: none;
+            padding: 8px 12px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: var(--vscode-button-hoverBackground);
+        }
+        pre {
+            background-color: var(--vscode-textCodeBlock-background);
+            border: 1px solid var(--vscode-input-border);
+            border-radius: 3px;
+            padding: 10px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: 'Courier New', Courier, monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI Web Developer Output</h1>
+    <div id="content"></div>
+    <div id="actions">
+        <button id="insertButton">Insert Code</button>
+        <button id="explainButton">Explain Code</button>
+        <button id="copyButton">Copy to Clipboard</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-java.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-csharp.min.js"></script>
+    <script>
+        const vscode = acquireVsCodeApi();
+        const contentDiv = document.getElementById('content');
+        const insertButton = document.getElementById('insertButton');
+        const explainButton = document.getElementById('explainButton');
+        const copyButton = document.getElementById('copyButton');
+
+        let currentCode = '';
+
+        function updateContent(content) {
+            contentDiv.innerHTML = content;
+            Prism.highlightAll();
+            
+            const codeBlocks = contentDiv.querySelectorAll('pre code');
+            if (codeBlocks.length > 0) {
+                currentCode = codeBlocks[0].textContent;
+            }
+        }
+
+        insertButton.addEventListener('click', () => {
+            vscode.postMessage({ command: 'insertCode', code: currentCode });
+        });
+
+        explainButton.addEventListener('click', () => {
+            vscode.postMessage({ command: 'explainCode', code: currentCode });
+        });
+
+        copyButton.addEventListener('click', () => {
+            navigator.clipboard.writeText(contentDiv.textContent).then(() => {
+                vscode.postMessage({ command: 'showInfo', text: 'Content copied to clipboard' });
+            }, (err) => {
+                vscode.postMessage({ command: 'showError', text: 'Failed to copy content: ' + err });
+            });
+        });
+
+        window.addEventListener('message', event => {
+            const message = event.data;
+            switch (message.command) {
+                case 'updateContent':
+                    updateContent(message.content);
+                    break;
+            }
+        });
+    </script>
+</body>
+</html>

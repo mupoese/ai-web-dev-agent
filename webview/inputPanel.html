@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Web Dev Input</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--vscode-editor-foreground);
+            background-color: var(--vscode-editor-background);
+            padding: 20px;
+        }
+        h1 {
+            color: var(--vscode-titleBar-activeForeground);
+        }
+        #providerSelect, #queryInput, #submitButton {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid var(--vscode-input-border);
+            background-color: var(--vscode-input-background);
+            color: var(--vscode-input-foreground);
+        }
+        #queryInput {
+            height: 100px;
+            resize: vertical;
+        }
+        #submitButton {
+            background-color: var(--vscode-button-background);
+            color: var(--vscode-button-foreground);
+            border: none;
+            cursor: pointer;
+        }
+        #submitButton:hover {
+            background-color: var(--vscode-button-hoverBackground);
+        }
+        #response {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: var(--vscode-editor-inactiveSelectionBackground);
+            border: 1px solid var(--vscode-input-border);
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI Web Developer Assistant</h1>
+    <select id="providerSelect">
+        <option value="ollama">Ollama</option>
+        <option value="huggingface">Hugging Face</option>
+        <option value="groq">Groq</option>
+        <option value="anthropic">Anthropic</option>
+        <option value="cohere">Cohere</option>
+        <option value="gemini">Gemini</option>
+        <option value="mistral">Mistral</option>
+        <option value="openai">OpenAI</option>
+    </select>
+    <textarea id="queryInput" placeholder="Enter your query here..."></textarea>
+    <button id="submitButton">Submit Query</button>
+    <div id="response"></div>
+
+    <script>
+        const vscode = acquireVsCodeApi();
+        const providerSelect = document.getElementById('providerSelect');
+        const queryInput = document.getElementById('queryInput');
+        const submitButton = document.getElementById('submitButton');
+        const responseDiv = document.getElementById('response');
+
+        // Initialize with the current provider
+        vscode.postMessage({ command: 'getCurrentProvider' });
+
+        providerSelect.addEventListener('change', (event) => {
+            vscode.postMessage({
+                command: 'changeProvider',
+                provider: event.target.value
+            });
+        });
+
+        submitButton.addEventListener('click', () => {
+            const query = queryInput.value;
+            if (query.trim()) {
+                vscode.postMessage({
+                    command: 'submitQuery',
+                    text: query
+                });
+                responseDiv.textContent = 'Processing...';
+            }
+        });
+
+        window.addEventListener('message', event => {
+            const message = event.data;
+            switch (message.command) {
+                case 'showResponse':
+                    responseDiv.textContent = message.text;
+                    break;
+                case 'showError':
+                    responseDiv.textContent = 'Error: ' + message.text;
+                    responseDiv.style.color = 'var(--vscode-errorForeground)';
+                    break;
+                case 'setCurrentProvider':
+                    providerSelect.value = message.provider;
+                    break;
+            }
+        });
+    </script>
+</body>
+</html>

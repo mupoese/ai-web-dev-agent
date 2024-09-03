@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Web Dev Settings</title>
+    <style>
+        body {
+            font-family: var(--vscode-font-family);
+            font-size: var(--vscode-font-size);
+            color: var(--vscode-foreground);
+            background-color: var(--vscode-editor-background);
+            padding: 20px;
+        }
+        h1 {
+            color: var(--vscode-titleBar-activeForeground);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--vscode-input-foreground);
+        }
+        input[type="text"],
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--vscode-input-border);
+            background-color: var(--vscode-input-background);
+            color: var(--vscode-input-foreground);
+        }
+        button {
+            background-color: var(--vscode-button-background);
+            color: var(--vscode-button-foreground);
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: var(--vscode-button-hoverBackground);
+        }
+        .provider-settings {
+            display: none;
+            border: 1px solid var(--vscode-panel-border);
+            padding: 15px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI Web Developer Agent Settings</h1>
+    <form id="settingsForm">
+        <div class="form-group">
+            <label for="aiProvider">AI Provider:</label>
+            <select id="aiProvider" name="aiProvider">
+                <option value="ollama">Ollama</option>
+                <option value="huggingface">Hugging Face</option>
+                <option value="groq">Groq</option>
+                <option value="anthropic">Anthropic</option>
+                <option value="cohere">Cohere</option>
+                <option value="gemini">Gemini</option>
+                <option value="mistral">Mistral</option>
+                <option value="openai">OpenAI</option>
+            </select>
+        </div>
+
+        <div id="ollamaSettings" class="provider-settings">
+            <div class="form-group">
+                <label for="ollamaApiUrl">Ollama API URL:</label>
+                <input type="text" id="ollamaApiUrl" name="ollama.apiUrl">
+            </div>
+            <div class="form-group">
+                <label for="ollamaModel">Ollama Model:</label>
+                <select id="ollamaModel" name="ollama.model"></select>
+            </div>
+        </div>
+
+        <div id="huggingfaceSettings" class="provider-settings">
+            <div class="form-group">
+                <label for="huggingfaceApiUrl">Hugging Face API URL:</label>
+                <input type="text" id="huggingfaceApiUrl" name="huggingface.apiUrl">
+            </div>
+            <div class="form-group">
+                <label for="huggingfaceApiKey">Hugging Face API Key:</label>
+                <input type="password" id="huggingfaceApiKey" name="huggingface.apiKey">
+            </div>
+            <div class="form-group">
+                <label for="huggingfaceModel">Hugging Face Model:</label>
+                <select id="huggingfaceModel" name="huggingface.model"></select>
+            </div>
+        </div>
+
+        <!-- Repeat similar blocks for other providers: groq, anthropic, cohere, gemini, mistral, openai -->
+
+        <button type="submit">Save Settings</button>
+    </form>
+
+    <script>
+        const vscode = acquireVsCodeApi();
+        const settingsForm = document.getElementById('settingsForm');
+        const aiProviderSelect = document.getElementById('aiProvider');
+        const providerSettings = document.querySelectorAll('.provider-settings');
+
+        // Initialize with current settings
+        vscode.postMessage({ command: 'getSettings' });
+
+        function showProviderSettings(provider) {
+            providerSettings.forEach(settings => {
+                settings.style.display = settings.id === `${provider}Settings` ? 'block' : 'none';
+            });
+            vscode.postMessage({ command: 'getAvailableModels', provider });
+        }
+
+        aiProviderSelect.addEventListener('change', (event) => {
+            showProviderSettings(event.target.value);
+        });
+
+        settingsForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const settings = Object.fromEntries(formData.entries());
+            vscode.postMessage({
+                command: 'saveSettings',
+                settings: settings
+            });
+        });
+
+        window.addEventListener('message', event => {
+            const message = event.data;
+            switch (message.command) {
+                case 'updateSettings':
+                    updateFormWithSettings(message.settings);
+                    showProviderSettings(message.settings.aiProvider);
+                    break;
+                case 'updateAvailableModels':
+                    updateAvailableModels(message.provider, message.models);
+                    break;
+            }
+        });
+
+        function updateFormWithSettings(settings) {
+            for (const [key, value] of Object.entries(settings)) {
+                const element = document.querySelector(`[name="${key}"]`);
+                if (element) {
+                    element.value = value;
+                }
+            }
+        }
+
+        function updateAvailableModels(provider, models) {
+            const modelSelect = document.getElementById(`${provider}Model`);
+            modelSelect.innerHTML = models.map(model => 
+                `<option value="${model}">${model}</option>`
+            ).join('');
+        }
+    </script>
+</body>
+</html>
